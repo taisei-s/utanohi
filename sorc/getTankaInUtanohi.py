@@ -2,6 +2,7 @@
 
 import urllib3
 from bs4 import BeautifulSoup
+import lxml
 import time
 import re
 from manager import CsvManager
@@ -16,29 +17,25 @@ def getArticleOfUtanohi(day, id_, pagename):
     r = http.request('GET', url)
     time.sleep(5)
 
-    soup = BeautifulSoup(r.data, 'html.parser')
+    soup = BeautifulSoup(r.data, 'lxml')
     article = soup.main.article
 
     return article
 
 def getTanka(article):
-    tanka_tabs = []
-    tanka_tabs += [article.find('a', class_="verse higher")]
-    tanka_tabs += article.find_all('a', class_="verse other")
+    tanka_tabs = article.find_all('a', class_=re.compile(r'^verse'))
 
     tankas = []
     for tanka_tab in tanka_tabs:
         try:
             if tanka_tab.string is None:
-                print(tanka_tab)
                 tanka_tab.ruby.unwrap()
                 tanka_tab.rt.extract()
                 tanka_tab.rb.unwrap()
 
             tanka = tanka_tab.text.replace("\u3000", '  ')
             tankas.append(tanka)
-
-        except:
+        except AttributeError:
             continue
 
     return tankas
@@ -56,30 +53,28 @@ def getDataInUtanohi(days, first_day=1):
 
         print(day)
 
-        article = getArticleOfUtanohi(day, 's', 'index')
+        article_day = getArticleOfUtanohi(day, 's', 'index')
 
-        for theme in article.find_all('a', class_="the"):
+        for theme in article_day.find_all('a', class_="the"):
             themes.append(theme.strong.string)
             theme_link_id = theme.get("id")
             id_ = theme_link_id[0]
-            article = getArticleOfUtanohi(day, id_, 'open')
+            article_theme = getArticleOfUtanohi(day, id_, 'open')
 
-            tankas.append(getTanka(article))
-            print(theme.strong.string)
+            tankas.append(getTanka(article_theme))
 
     for i in range(len(themes)):
         data.append([themes[i]] + tankas[i])
-
-    print(data)
 
     return data
 
 
 def main():
-    days = 518
+    #437, 518
+    days = 1904
     csv_manager = CsvManager()
-    data = getDataInUtanohi(days, first_day=518)
-    #csv_manager.make_file(data, '../data/theme_tanka.csv')
+    data = getDataInUtanohi(days, first_day=1)
+    csv_manager.make_file(data, '../data/theme_tanka.csv')
 
 if __name__ == "__main__":
     main()

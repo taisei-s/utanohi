@@ -2,7 +2,7 @@
 
 import urllib3
 from bs4 import BeautifulSoup
-import lxml
+import html5lib
 import time
 import re
 from manager import CsvManager
@@ -17,7 +17,7 @@ def getArticleOfUtanohi(day, id_, pagename):
     r = http.request('GET', url)
     time.sleep(5)
 
-    soup = BeautifulSoup(r.data, 'lxml')
+    soup = BeautifulSoup(r.data, 'html5lib')
     article = soup.main.article
 
     return article
@@ -66,15 +66,17 @@ def getDataInUtanohi(days, first_day=1):
     for i in range(len(themes)):
         data.append([themes[i]] + tankas[i])
 
+    for d in data:
+        print(d)
     return data
 
 
 def main():
-    #437, 518
-    days = 1904
+    #437, 518, 978
+    days = 978
     csv_manager = CsvManager()
-    data = getDataInUtanohi(days, first_day=1)
-    csv_manager.make_file(data, '../data/theme_tanka.csv')
+    data = getDataInUtanohi(days, first_day=978)
+    #csv_manager.make_file(data, '../data/theme_tanka.csv')
 
 if __name__ == "__main__":
     main()

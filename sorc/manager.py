@@ -46,8 +46,9 @@ class JsonManager(Manager):
         if type(data) is not dict:
             raise AttributeError("data type '{}' can't write file in this method. please use data type dict".format(type(data)))
 
+        text = json.dumps(data, sort_keys=False, ensure_ascii=False, indent=2)
         with open(filename, 'w') as jsonfile:
-            json.dump(data, jsonfile)
+            jsonfile.write(text)
 
     def load_file(self, filename):
         with open(filename, 'r') as jsonfile:

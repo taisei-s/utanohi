@@ -3,19 +3,18 @@
 import CaboCha
 from manager import CsvManager, TxtManager
 
-cabocha = CaboCha.Parser('')
+cabocha = CaboCha.Parser('-d /usr/local/lib/mecab/dic/mecab-ipadic-neologd')
 csv = CsvManager()
 text = TxtManager()
-lines = csv.load_file('../data/data.csv')
+lines = csv.load_file('../data/theme_tanka.csv')
 
 data = []
 for line in lines:
     for i, tanka in enumerate(line):
         if i == 0:
-            theme = tanka + '\n'
-            data.extend([theme])
+            data.extend([tanka + '\n'])
             continue
-        data.extend([tanka])
+        data.extend([tanka + '\n'])
         data.extend([cabocha.parseToString(tanka)])
         tree = cabocha.parse(tanka)
         data.extend([tree.toString(CaboCha.FORMAT_LATTICE)])

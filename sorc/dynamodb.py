@@ -57,7 +57,8 @@ def batch_write(table, item_list):
                 error_num += 1
                 print(e.response['Error']['Message'])
                 jsonManager = JsonManager()
-                jsonManager.make_file(item, '../data/error_{}_{}.json'.format(item['theme_id'], error_num))
+                filename = '../data/error_{}_{}.json'.format(item['theme_id'], error_num)
+                jsonManager.make_file(item, filename)
     if error_num == 0:
         print('all item write succeeded!')
     else:
@@ -92,9 +93,15 @@ def get(table, key):
 def search(table, key):
     pass
 
+def scan(table):
+    response = table.scan()
+    data = response['Items']
+
+    return data
+
 def main():
     tableName = 'utanohi'
-    #key = {'theme_id': '437e', 'theme': '鉛筆'}
+    key = {'theme_id': '1573d', 'theme': 'ハックルベリー'}
     dynamodb = boto3.resource(
         'dynamodb',
         region_name='ap-northeast-1',
@@ -102,7 +109,9 @@ def main():
         aws_access_key_id='ACCESS_ID',
         aws_secret_access_key='ACCESS_KEY')
     table = create(dynamodb, 'testTable')
+    #table = create(dynamodb, tableName)
     #table = dynamodb.Table(tableName)
+    #table = dynamodb.Table('testTable')
     #batch_write(table, item_list)
     #print(get(table, key))
     #delete(table, key)

@@ -17,7 +17,7 @@ def getArticleOfUtanohi(day, id_, pagename):
 
     http = urllib3.PoolManager()
     r = http.request('GET', url)
-    time.sleep(5)
+    time.sleep(3)
 
     soup = BeautifulSoup(r.data, 'html5lib')
     article = soup.main.find('article', id="hall")
@@ -120,8 +120,8 @@ def getDataInUtanohi(day):
     return data
 
 def getAllTanka(today, first_day=1):
-    #tableName = 'utanohi'
-    tableName = 'testTable'
+    tableName = 'utanohi'
+    #tableName = 'testTable'
     myDynamodb = boto3.resource(
         'dynamodb',
         region_name='ap-northeast-1',
@@ -136,9 +136,9 @@ def getAllTanka(today, first_day=1):
 
 def main():
     #437, 518, 978,1572, 1587, 1588, 1820
-    today = 1923
-    #getAllTanka(today)
-    getAllTanka(1573, first_day=1572)
+    today = 1937
+    getAllTanka(today)
+    #getAllTanka(1574, first_day=1572)
     #data = getDataInUtanohi(1913)
     #for d in data:
     #    print(d)

@@ -35,7 +35,7 @@ def tokenize_mecab(text, m, dic='ipadic'):
             try:
                 tokens.append([mecab_nodes.surface] + features[0:6] + [features[7]] + [features[10]] + [features[9]])
             except IndexError:
-                tokens.append(features)
+                tokens.append([mecab_nodes.surface] + features)
             mecab_nodes = mecab_nodes.next  # nextを忘れない
 
     return tokens
@@ -66,9 +66,14 @@ def parseFixed(tanka):
     #m_unidic = init_mecab('/usr/lib/x86_64-linux-gnu/mecab/dic/UniDic-qkana_1603')
     m_neologd = init_mecab('/usr/local/lib/mecab/dic/mecab-ipadic-neologd')
     m_unidic = init_mecab('/usr/local/lib/mecab/dic/UniDic-qkana_1603')
+    tanka = tanka.replace(' ', '')
     neologd_tokens = tokenize_mecab(tanka, m_neologd)
     unidic_tokens = tokenize_mecab(tanka, m_unidic, dic='uniDic')
 
+    neologd_tokens.append(['', '*', '*', '*', '*', '*', '*', '', '', ''])
+    neologd_tokens.append(['', '*', '*', '*', '*', '*', '*', '', '', ''])
+    unidic_tokens.append(['', '*', '*', '*', '*', '*', '*', '', '', ''])
+    unidic_tokens.append(['', '*', '*', '*', '*', '*', '*', '', '', ''])
     fixeds = [5, 7, 5, 7, 7, 0, 0]
     parsed = ""
     i = 0
@@ -76,8 +81,9 @@ def parseFixed(tanka):
     u_num = 0
     mora = 0
     fixed = fixeds[0]
-    while n_num+1 <= len(neologd_tokens) and u_num+1 <= len(unidic_tokens):
-
+    while tanka != parsed.replace('　', ''):
+        print(fixed, mora)
+        print(parsed)
         n_token = neologd_tokens[n_num]
         u_token = unidic_tokens[u_num]
 
@@ -95,6 +101,7 @@ def parseFixed(tanka):
             u_len = len(u_token[0])
             while len(n_token[0]) > u_len:
                 u_num += 1
+                print(u_token)
                 u_token = unidic_tokens[u_num]
                 u_len += len(u_token[0])
         elif countMora(n_token) < countMora(u_token):
@@ -103,35 +110,32 @@ def parseFixed(tanka):
             n_len = len(n_token[0])
             while len(u_token[0]) > n_len:
                 n_num += 1
+                print(n_token)
                 n_token = neologd_tokens[n_num]
                 n_len += len(n_token[0])
 
         #定型にはまっているなら全角の空白を入れて、はまっていないならいれない
-        try:
-            if mora == fixed:
-                if not(countMora(neologd_tokens[n_num+1]) <= 1 and countMora(unidic_tokens[u_num+1]) <= 1):
-                    i += 1
-                    mora = 0
-                    parsed += '　'
-                    fixed = fixeds[i]
-            elif mora == fixed-1:
-                if countMora(neologd_tokens[n_num+1]) >= 3 or countMora(unidic_tokens[u_num+1]) >= 3:
-                    i += 1
-                    mora = 0
-                    parsed += '　'
-                    fixed = fixeds[i]
-            elif mora == fixed+1:
-                if not(countMora(neologd_tokens[n_num+1]) <= 1 and countMora(unidic_tokens[u_num+1]) <= 1):
-                    i += 1
-                    mora = 0
-                    parsed += '　'
-                    fixed = fixeds[i]
-            elif mora > fixed:
+        if mora == fixed:
+            if not(countMora(neologd_tokens[n_num+1]) <= 1 and countMora(unidic_tokens[u_num+1]) <= 1):
                 i += 1
-                fixed += fixeds[i]
-        except IndexError:
-            print('kokoda!')
-            break
+                mora = 0
+                parsed += '　'
+                fixed = fixeds[i]
+        elif mora == fixed-1:
+            if countMora(neologd_tokens[n_num+1]) >= 3 or countMora(unidic_tokens[u_num+1]) >= 3:
+                i += 1
+                mora = 0
+                parsed += '　'
+                fixed = fixeds[i]
+        elif mora == fixed+1:
+            if not(countMora(neologd_tokens[n_num+1]) <= 1 and countMora(unidic_tokens[u_num+1]) <= 1):
+                i += 1
+                mora = 0
+                parsed += '　'
+                fixed = fixeds[i]
+        elif mora > fixed:
+            i += 1
+            fixed += fixeds[i]
 
         n_num += 1
         u_num += 1
@@ -139,16 +143,39 @@ def parseFixed(tanka):
             NONE = fixeds[i+1]
         except IndexError:
             i = i - 1
+        try:
+            NONE = neologd_tokens[n_num+1]
+        except IndexError:
+            n_num = n_num - 1
+        try:
+            NONE = unidic_tokens[u_num+1]
+        except IndexError:
+            u_num = u_num - 1
 
     return parsed
 
 def main():
+    """
     txt_manager = TxtManager()
     tankas = txt_manager.load_file('../data/test.txt')
 
     for tanka in tankas:
-        p = parseFixed(tanka)
+        print(tanka.rstrip())
+        p = parseFixed(tanka.rstrip())
         print(p)
+    """
+    tanka = '一番じゃないんだねもうおはようもおやすみもクロが先なんだね'
+    print(parseFixed(tanka.rstrip()))
+    """
+    m_neologd = init_mecab('/usr/local/lib/mecab/dic/mecab-ipadic-neologd')
+    m_unidic = init_mecab('/usr/local/lib/mecab/dic/UniDic-qkana_1603')
+    tanka = tanka.replace(' ', '')
+    neologd_tokens = tokenize_mecab(tanka, m_neologd)
+    unidic_tokens = tokenize_mecab(tanka, m_unidic, dic='uniDic')
+    print(neologd_tokens)
+    print(unidic_tokens)
+    """
+
 
 if __name__ == "__main__":
     main()

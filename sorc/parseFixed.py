@@ -62,29 +62,87 @@ def countMora(m_token):
     return mora
 
 def parseFixed(tanka):
-    fixed = [5, 13, 19, 27, 35, '<eos>']
-    parsed = ""
     m_neologd = init_mecab('/usr/lib/x86_64-linux-gnu/mecab/dic/mecab-ipadic-neologd')
     m_unidic = init_mecab('/usr/lib/x86_64-linux-gnu/mecab/dic/UniDic-qkana_1603')
-    neologd_tokens = tokenize_mecab(text, m_neologd)
-    unidic_tokens = tokenize_mecab(text, m_unidic, dic='uniDic')
+    neologd_tokens = tokenize_mecab(tanka, m_neologd)
+    unidic_tokens = tokenize_mecab(tanka, m_unidic, dic='uniDic')
 
+    fixeds = [5, 7, 5, 7, 7, -1]
+    parsed = ""
     i = 0
-    while fixed[i] != '<eos>':
-        
-        if len(parsed) >= fixed[i]:
-            i += 1
+    n_num = 0
+    u_num = 0
+    mora = 0
+    fixed = fixeds[0]
+    while n_num+1 <= len(neologd_tokens) and u_num+1 <= len(unidic_tokens):
+        n_token = neologd_tokens[n_num]
+        u_token = unidic_tokens[u_num]
+        if countMora(n_token) == countMora(u_token):
+            if len(n_token[0]) >= len(u_token[0]):
+                parsed += n_token[0]
+                mora += countMora(n_token)
+            else:
+                parsed += u_token[0]
+                mora += countMora(u_token)
+        elif countMora(n_token) > countMora(u_token):
+            parsed += n_token[0]
+            mora += countMora(n_token)
+            u_len = len(u_token[0])
+            while len(n_token[0]) > u_len:
+                u_num += 1
+                u_token = unidic_tokens[u_num]
+                u_len += len(u_token[0])
+        elif countMora(n_token) < countMora(u_token):
+            parsed += u_token[0]
+            mora += countMora(u_token)
+            n_len = len(n_token[0])
+            while len(u_token[0]) > n_len:
+                n_num += 1
+                n_token = neologd_tokens[n_num]
+                n_len += len(n_token[0])
+
+        try:
+            if mora == fixed:
+                if not(countMora(neologd_tokens[n_num+1]) <= 1 and countMora(unidic_tokens[u_num+1]) <= 1):
+                    i += 1
+                    mora = 0
+                    parsed += '　'
+                    fixed = fixeds[i]
+            elif mora == fixed-1:
+                if countMora(neologd_tokens[n_num+1]) >= 3 or countMora(unidic_tokens[u_num+1]) >= 3:
+                    i += 1
+                    mora = 0
+                    parsed += '　'
+                    fixed = fixeds[i]
+            elif mora == fixed+1:
+                if not(countMora(neologd_tokens[n_num+1]) <= 1 and countMora(unidic_tokens[u_num+1]) <= 1):
+                    i += 1
+                    mora = 0
+                    parsed += '　'
+                    fixed = fixeds[i]
+            elif mora > fixed:
+                i += 1
+                fixed += fixeds[i]
+        except IndexError:
+            break
+
+        n_num += 1
+        u_num += 1
+        if i+1 > len(fixeds):
+            i = i - 1
+        print(fixed)
+        print(parsed)
+
+    return parsed
 
 def main():
-    #text = 'めつきりとGigaの減つてる月末に飢餓をかんじてすこしひもじい'
-    text = '僕の無能な妄想日記。 8月13日晴れ。 あなたの目になって僕を見つめるあなたを創った。 こころはからだに置いていったので、僕はちゃんと確かめました。 こころはそこにないってことを。(三重苦歌)'
+    #tanka = 'めつきりとGigaの減つてる月末に飢餓をかんじてすこしひもじい'
+    #tanka = '(厳重な警備すり抜け9階のエッグフライを食べに行こうよ)'
+    tanka = 'ターコイズブルーをぶどう色と呼ぶきみが育った星のおもかげ'
 
-    for token in neologd_tokens:
-        print(countMora(token), token)
-    print()
-    for token in unidic_tokens:
-        print(countMora(token), token)
+    p = parseFixed(tanka)
 
+    print(p)
 
 if __name__ == "__main__":
     main()

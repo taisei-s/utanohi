@@ -2,7 +2,7 @@
 
 import re
 import MeCab
-from manager import CsvManager
+from manager import CsvManager,TxtManager
 import alkana
 
 def init_mecab(dic_path=''):
@@ -62,12 +62,14 @@ def countMora(m_token):
     return mora
 
 def parseFixed(tanka):
-    m_neologd = init_mecab('/usr/lib/x86_64-linux-gnu/mecab/dic/mecab-ipadic-neologd')
-    m_unidic = init_mecab('/usr/lib/x86_64-linux-gnu/mecab/dic/UniDic-qkana_1603')
+    #m_neologd = init_mecab('/usr/lib/x86_64-linux-gnu/mecab/dic/mecab-ipadic-neologd')
+    #m_unidic = init_mecab('/usr/lib/x86_64-linux-gnu/mecab/dic/UniDic-qkana_1603')
+    m_neologd = init_mecab('/usr/local/lib/mecab/dic/mecab-ipadic-neologd')
+    m_unidic = init_mecab('/usr/local/lib/mecab/dic/UniDic-qkana_1603')
     neologd_tokens = tokenize_mecab(tanka, m_neologd)
     unidic_tokens = tokenize_mecab(tanka, m_unidic, dic='uniDic')
 
-    fixeds = [5, 7, 5, 7, 7, -1]
+    fixeds = [5, 7, 5, 7, 7, 0, 0]
     parsed = ""
     i = 0
     n_num = 0
@@ -133,7 +135,9 @@ def parseFixed(tanka):
 
         n_num += 1
         u_num += 1
-        if i+1 > len(fixeds):
+        try:
+            NONE = fixeds[i+1]
+        except IndexError:
             i = i - 1
         print(fixed)
         print(parsed)
@@ -141,13 +145,12 @@ def parseFixed(tanka):
     return parsed
 
 def main():
-    #tanka = 'めつきりとGigaの減つてる月末に飢餓をかんじてすこしひもじい'
-    #tanka = '(厳重な警備すり抜け9階のエッグフライを食べに行こうよ)'
-    tanka = 'いつの間にか似てきていてアルファベットみたいなふたりだね、大文字のＩと小文字のｌと。'
+    txt_manager = TxtManager()
+    tankas = txt_manager.load_file('../data/test.txt')
 
-    p = parseFixed(tanka)
-
-    print(p)
+    for tanka in tankas:
+        p = parseFixed(tanka)
+        print(p)
 
 if __name__ == "__main__":
     main()

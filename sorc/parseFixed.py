@@ -75,8 +75,11 @@ def parseFixed(tanka):
     mora = 0
     fixed = fixeds[0]
     while n_num+1 <= len(neologd_tokens) and u_num+1 <= len(unidic_tokens):
+
         n_token = neologd_tokens[n_num]
         u_token = unidic_tokens[u_num]
+
+        #定型を利用してneologdかunidicかどっちの形態素がいいか判断し、追加する
         if countMora(n_token) == countMora(u_token):
             if len(n_token[0]) >= len(u_token[0]):
                 parsed += n_token[0]
@@ -101,6 +104,7 @@ def parseFixed(tanka):
                 n_token = neologd_tokens[n_num]
                 n_len += len(n_token[0])
 
+        #定型にはまっているなら全角の空白を入れて、はまっていないならいれない
         try:
             if mora == fixed:
                 if not(countMora(neologd_tokens[n_num+1]) <= 1 and countMora(unidic_tokens[u_num+1]) <= 1):
@@ -124,6 +128,7 @@ def parseFixed(tanka):
                 i += 1
                 fixed += fixeds[i]
         except IndexError:
+            print('kokoda!')
             break
 
         n_num += 1
@@ -138,7 +143,7 @@ def parseFixed(tanka):
 def main():
     #tanka = 'めつきりとGigaの減つてる月末に飢餓をかんじてすこしひもじい'
     #tanka = '(厳重な警備すり抜け9階のエッグフライを食べに行こうよ)'
-    tanka = 'ターコイズブルーをぶどう色と呼ぶきみが育った星のおもかげ'
+    tanka = 'いつの間にか似てきていてアルファベットみたいなふたりだね、大文字のＩと小文字のｌと。'
 
     p = parseFixed(tanka)
 

@@ -139,8 +139,6 @@ def parseFixed(tanka):
             NONE = fixeds[i+1]
         except IndexError:
             i = i - 1
-        print(fixed)
-        print(parsed)
 
     return parsed
 

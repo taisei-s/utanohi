@@ -136,7 +136,7 @@ def getAllTanka(today, first_day=1):
 
 def main():
     #437, 518, 978,1572, 1587, 1588, 1820
-    today = 1937
+    today = 2032
     getAllTanka(today)
     #getAllTanka(1574, first_day=1572)
     #data = getDataInUtanohi(1913)

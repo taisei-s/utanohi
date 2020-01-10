@@ -6,7 +6,7 @@ from botocore.exceptions import ClientError
 from manager import JsonManager
 
 # create table
-def create(dynamodb, tableName):
+def createTable(dynamodb, tableName):
     table = dynamodb.create_table(
         TableName = tableName,
         KeySchema = [
@@ -34,6 +34,20 @@ def create(dynamodb, tableName):
             'WriteCapacityUnits': 25
         },
     )
+
+    return table
+
+
+# get table
+def getTable(tableName):
+    dynamodb = boto3.resource(
+        'dynamodb',
+        region_name='ap-northeast-1',
+        endpoint_url='http://localhost:8000',
+        aws_access_key_id='ACCESS_ID',
+        aws_secret_access_key='ACCESS_KEY')
+
+    table = dynamodb.Table(tableName)
 
     return table
 
@@ -73,7 +87,7 @@ def delete(table, key):
     else:
         print("item deleted!")
 
-# get item
+# get one item
 def get(table, key):
     item = None
     try:
@@ -90,7 +104,8 @@ def get(table, key):
 
     return item
 
-def search(table, key):
+# get items
+def search(table, key, filter_key=None):
     pass
 
 def scan(table):
@@ -101,21 +116,12 @@ def scan(table):
 
 def main():
     tableName = 'utanohi'
-    key = {'theme_id': '1573d', 'theme': 'ハックルベリー'}
-    dynamodb = boto3.resource(
-        'dynamodb',
-        region_name='ap-northeast-1',
-        endpoint_url='http://localhost:8000',
-        aws_access_key_id='ACCESS_ID',
-        aws_secret_access_key='ACCESS_KEY')
-    table = create(dynamodb, 'testTable')
-    #table = create(dynamodb, tableName)
-    #table = dynamodb.Table(tableName)
+    key = {'theme': '自由詠', 'theme_id': ''}
+    #table = createTable(dynamodb, 'testTable')
+    #table = createTable(dynamodb, tableName)
+    table = getTable(tableName)
     #table = dynamodb.Table('testTable')
-    #batch_write(table, item_list)
-    #print(get(table, key))
-    #delete(table, key)
-    #table.delete()
+    print(get(table, key))
 
 
 if __name__ == "__main__":

@@ -3,7 +3,7 @@
 from abc import ABCMeta, abstractmethod
 import json
 import csv
-
+import decimal
 
 class Manager(metaclass=ABCMeta):
     @abstractmethod
@@ -41,12 +41,21 @@ class TxtManager(Manager):
         else:
             raise AttributeError("data type '{}' can't write file in this method. please use data type str or list".format(type(data)))
 
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            if o % 1 > 0:
+                return float(o)
+            else:
+                return int(o)
+        return super(DecimalEncoder, self).default(o)
+
 class JsonManager(Manager):
     def make_file(self, data, filename):
         if type(data) is not dict:
             raise AttributeError("data type '{}' can't write file in this method. please use data type dict".format(type(data)))
 
-        text = json.dumps(data, sort_keys=False, ensure_ascii=False, indent=2)
+        text = json.dumps(data, sort_keys=False, ensure_ascii=False, indent=2, cls=DecimalEncoder)
         with open(filename, 'w') as jsonfile:
             jsonfile.write(text)
 

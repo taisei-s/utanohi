@@ -40,15 +40,15 @@ def analyseTanka():
     json_manager = JsonManager()
     word_count = json_manager.load_file('../data/wordCont.json')
 
-    value_line = 100
+    value_line = 10
     keys = []
     for key, value in word_count.items():
-        if value_line <= value:
+        if value_line > value:
             keys.append(key)
 
     print(len(word_count))
     print(len(keys))
-    print(keys)
+    #print(keys)
 
 
 if __name__ == "__main__":

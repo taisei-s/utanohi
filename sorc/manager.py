@@ -87,6 +87,9 @@ class CsvManager(Manager):
 
 
 if __name__ == "__main__":
-    test = [[1, 2, 3, 4], [1, 2, 3, 4]]
     csvtest = CsvManager()
-    csvtest.add_file(test, 'test.csv')
+    txttest = TxtManager()
+    data = csvtest.load_file("../data/theme_tanka.csv")
+    for d in data:
+        d = '\n'.join(d).replace(' ', '') + '\n'
+        txttest.add_file(d, '../data/sp_input.txt')

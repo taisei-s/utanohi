@@ -50,11 +50,11 @@ def countMora(m_token):
         yomi = m_token[-1]
 
     if yomi == '':
-        if m_token[1] == '記号' or m_token[1] == '補助記号' or m_token[0] == '　':
+        if m_token[1] == '記号' or m_token[1] == '補助記号':
             mora = 0
         else:
             mora = len(re.sub(r'[ゃゅょ]+?', '', m_token[0]))
-    elif m_token[1] == '記号' or m_token[1] == '補助記号' or m_token[0] == '　':
+    elif m_token[1] == '記号' or m_token[1] == '補助記号':
         mora = 0
     else:
         mora = len(re.sub(r'[ャュョ]+?', '', yomi))
@@ -155,71 +155,40 @@ def merge(n_tokens, u_tokens):
 
     return merge_tokens
 
-def parseFixed2(tanka):
+def main():
+    csv_manager = CsvManager()
     #m_neologd = init_mecab('/usr/lib/x86_64-linux-gnu/mecab/dic/mecab-ipadic-neologd')
     #m_unidic = init_mecab('/usr/lib/x86_64-linux-gnu/mecab/dic/UniDic-qkana_1603')
     m_neologd = init_mecab('/usr/local/lib/mecab/dic/mecab-ipadic-neologd')
     m_unidic = init_mecab('/usr/local/lib/mecab/dic/UniDic-qkana_1603')
 
-    tanka = re.sub(r'\s+?', r'　', tanka.rstrip('\r\n'))
-    neologd_tokens = tokenize_mecab(tanka, m_neologd)
-    unidic_tokens = tokenize_mecab(tanka, m_unidic, dic='uniDic')
+    eval_data = []
 
-    merge_tokens = merge(neologd_tokens, unidic_tokens)
+    data = csv_manager.load_file('../data/test.csv')
 
-    fixeds = [5, 7, 5, 7, 7, 0, 0]
-    parsed = ""
-    mora = 0
-    p = 0
-    fixed = fixeds[p]
-    for i in range(len(merge_tokens)+1):
-        try:
-            mora += countMora(merge_tokens[i])
-            parsed += merge_tokens[i][0]
-
-            if mora == fixed:
-                if not(countMora(merge_tokens[i+1]) <= 1):
-                    p += 1
-                    mora = 0
-                    parsed += '　'
-                    fixed = fixeds[p]
-            elif mora == fixed-1:
-                if countMora(merge_tokens[i+1]) >= 3:
-                    p += 1
-                    mora = 0
-                    parsed += '　'
-                    fixed = fixeds[p]
-            elif mora == fixed+1:
-                p += 1
-                mora = 0
-                parsed += '　'
-                fixed = fixeds[p]
-            elif mora > fixed:
-                p += 1
-                fixed += fixeds[p]
-        except IndexError:
-            break
-
-        try:
-            NONE = fixeds[p+1]
-        except IndexError:
-            p = p - 1
-
-    return parsed
-
-def main():
-    csv_manager = CsvManager()
-    themes = csv_manager.load_file('../data/test.csv')
-    i = 0
-    for tankas in themes:
-        if i > 10:
-            break
-        output = [[tankas.pop(0)]]
+    for tankas in data:
         for tanka in tankas:
-            parsed = parseFixed2(tanka)
-            output.append([tanka, parsed])
-        csv_manager.add_file(output, '../data/parsedTanka.csv')
-        i += 1
+            eval_data.append([tanka])
+            tanka = re.sub(r'\s+?', r'　', tanka.rstrip('\r\n'))
+            neologd_tokens = tokenize_mecab(tanka, m_neologd)
+            nts = ['nelogd']
+            for token in neologd_tokens:
+                nts.append(token[0] + '/' + token[1])
+            eval_data.append(nts)
+            uts = ['unidic']
+            unidic_tokens = tokenize_mecab(tanka, m_unidic, dic='uniDic')
+            for token in unidic_tokens:
+                uts.append(token[0] + '/' + token[1])
+            eval_data.append(uts)
+
+            merge_tokens = merge(neologd_tokens, unidic_tokens)
+            mts = ['merge']
+            for token in merge_tokens:
+                mts.append(token[0] + '/' + token[1])
+            eval_data.append(mts)
+
+    print(eval_data)
+    csv_manager.make_file(eval_data, '../data/eval_merge2.csv')
 
 if __name__ == "__main__":
     main()
